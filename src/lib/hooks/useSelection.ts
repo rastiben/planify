@@ -50,10 +50,10 @@ const useSelection = () => {
 
         setSelectedRange(Interval.fromDateTimes(
             selectedDateStart < selectedStart ? selectedDateStart : selectedStart,
-            selectedDateStart >= selectedStart ? selectedDateStart.plus({ hour: 1 }) : selectedRange.end!
+            selectedDateStart >= selectedStart ? selectedDateStart.plus({ hour: 1 }) : selectedStart.plus({ hour: 1 })
         ));
 
-    }, [isSelecting, selectedRange, getSelectedDate, date, setSelectedRange]);
+    }, [isSelecting, selectedRange, selectedStart, getSelectedDate, date, setSelectedRange]);
 
     const onMouseUp = useCallback((e: MouseEvent) => {
         const target = e.target as HTMLElement;
