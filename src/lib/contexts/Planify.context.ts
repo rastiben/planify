@@ -1,10 +1,12 @@
 import { createContext, useContext } from "react";
 import { PlanfiyDaySlots } from "../types.ts";
-import { DateTime } from "luxon";
+import { DateTime, Interval } from "luxon";
 
 type PlanifyContextProps = {
     date: DateTime;
     events: PlanfiyDaySlots;
+    selectedRange: Interval | null,
+    setSelectedRange: (selectedRange: Interval | null) => void;
 }
 
 const PlanifyContext = createContext<PlanifyContextProps | null>(null);

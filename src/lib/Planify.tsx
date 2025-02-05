@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { DateTime, Settings } from "luxon";
+import { DateTime, Interval, Settings } from "luxon";
 import { PlanifyProvider } from "./contexts/Planify.context.ts";
 import { VIEWS, PlanifyEvent } from "./types.ts";
 import Week from "./view/Week/Week.tsx";
@@ -15,14 +15,15 @@ const ViewsComponent = {
 const Planify = () => {
     const [date, setDate] = useState(DateTime.now());
     const [view, setView] = useState(VIEWS.Week);
+    const [selectedRange, setSelectedRange] = useState<Interval | null>(null);
     const [events, setEvents] = useState<PlanifyEvent[]>([{
         id: "1",
-        start: DateTime.now().startOf("day").set({ hour: 12, minute: 0 }),
-        end: DateTime.now().startOf("day").set({ hour: 14, minute: 0 })
+        start: date.startOf("week").set({ hour: 12, minute: 0 }),
+        end: date.startOf("week").set({ hour: 14, minute: 0 })
     }, {
         id: "1",
-        start: DateTime.now().startOf("day").plus({ day: 1 }).set({ hour: 12, minute: 0 }),
-        end: DateTime.now().startOf("day").plus({ day: 2 }).set({ hour: 14, minute: 0 })
+        start: date.startOf("week").plus({ day: 1 }).set({ hour: 12, minute: 0 }),
+        end: date.startOf("week").plus({ day: 2 }).set({ hour: 14, minute: 0 })
     }]);
 
     const computedEvents = useMemo(() => {
@@ -32,7 +33,7 @@ const Planify = () => {
     const ViewComponent = ViewsComponent[view];
 
     return (
-        <PlanifyProvider value={{ date, events: computedEvents }}>
+        <PlanifyProvider value={{ date, events: computedEvents, selectedRange, setSelectedRange }}>
             <div className="planify">
                 <ViewComponent />
             </div>

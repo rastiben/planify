@@ -1,8 +1,8 @@
 import { PlanifyEvent } from "../../../types.ts";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { getEventDaySlot, getEventOffset, getEventTimeFromOffsets } from "../../../helpers/events.ts";
 import useResizeObserver from "use-resize-observer";
-import { DateTime } from "luxon";
+import { DateTime, Interval } from "luxon";
 import Draggable from "react-draggable";
 import { usePlanify } from "../../../contexts/Planify.context.ts";
 
@@ -23,7 +23,7 @@ const Event = ({ event, day }: EventProps) => {
     const [isResizing, setIsResizing] = useState(false);
 
     const { start, end } = useMemo(() => {
-        return getEventDaySlot(currentEvent, day);
+        return getEventDaySlot(Interval.fromDateTimes(currentEvent.start, currentEvent.end), day);
     }, [day, currentEvent]);
 
     const offsets = useMemo(() => {
@@ -50,7 +50,7 @@ const Event = ({ event, day }: EventProps) => {
             bottom: data.y + (offsets?.end - offsets?.start),
             top: data.y
         });
-        const newDay = date.plus({ days: Math.round(data.x / dayWidth) });
+        const newDay = date.startOf("week").plus({ days: Math.round(data.x / dayWidth) });
 
         setCurrentEvent(prev => ({
             ...prev,

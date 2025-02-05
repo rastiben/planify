@@ -60,9 +60,9 @@ export const getEventTimeFromOffsets = ({
 };
 
 
-export const getEventDaySlot = (event: PlanifyEvent, date: DateTime) => {
-    const isStartDate = event.start.hasSame(date, "day");
-    const isEndDate = event.end.hasSame(date, "day");
+export const getEventDaySlot = (event: Interval, date: DateTime) => {
+    const isStartDate = (event.start!).hasSame(date, "day");
+    const isEndDate = (event.end!).hasSame(date, "day");
 
     if (isStartDate && isEndDate) {
         return {

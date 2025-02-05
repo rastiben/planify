@@ -86,11 +86,18 @@
                             border-bottom: 1px solid black;
                         }
                     }
+
+                    .planify-week--selected-range {
+                        position: absolute;
+                        background: #59d5d2;
+                        opacity: 0.5;
+                        width: 100%;
+                    }
                 }
             }
         }
 
-        .planify-events {
+        .planify-week--events {
             position: absolute;
             inset: 0;
 
