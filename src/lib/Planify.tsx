@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { DateTime, Interval, Settings } from "luxon";
-import { PlanifyProvider } from "./contexts/Planify.context.ts";
+import { PlanifyProvider } from "./contexts/Planify.context.tsx";
 import { VIEWS, PlanifyEvent } from "./types.ts";
 import Week from "./view/Week/Week.tsx";
 import "./index.css";

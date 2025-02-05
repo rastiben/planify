@@ -1,14 +1,13 @@
-import { usePlanify } from "../../contexts/Planify.context.ts";
+import { usePlanify } from "../../contexts/Planify.context.tsx";
 import { Interval } from "luxon";
 import Header from "./Header/Header.tsx";
 import Time from "./Body/Time.tsx";
 import Day from "./Body/Day.tsx";
-import useSelection from "../../hooks/useSelection.ts";
+import useWeek from "./hooks/useWeek.ts";
 
 const Week = () => {
-    const {date} = usePlanify();
-
-    const { ref } = useSelection();
+    const { date } = usePlanify();
+    const { ref } = useWeek();
     const range = Interval.fromDateTimes(date.startOf("week"), date.endOf("week"));
 
     return (

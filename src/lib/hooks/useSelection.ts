@@ -1,30 +1,28 @@
-import { usePlanify } from "../contexts/Planify.context.ts";
+import { usePlanify } from "../contexts/Planify.context.tsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DateTime, Interval } from "luxon";
-import { getEventTimeFromOffsets } from "../helpers/events.ts";
-import { roundDateTime } from "../helpers/date.ts";
+import { getEventSlotFromOffsets } from "../helpers/events.ts";
+import { floorDateTime, floorDateTime } from "../helpers/date.ts";
 
 const useSelection = () => {
-    const { date, selectedRange, setSelectedRange } = usePlanify();
+    const { bounds, date, colWidth, selectedRange, setSelectedRange } = usePlanify();
     const [isSelecting, setIsSelecting] = useState(false);
     const [selectedStart, setSelectedStart] = useState<DateTime | null>(null);
     const ref = useRef<HTMLDivElement | null>(null);
 
     const getSelectedDate = useCallback(({ x, y }: { x: number; y: number }) => {
-        const dayWidth = document.querySelector(".planify-week--body--day")?.getBoundingClientRect?.()?.width || 0;
-        const bounds: DOMRect | null = ref.current?.getBoundingClientRect();
         const offset = y - bounds?.top;
-        const day = date.startOf("week").plus({ days: Math.floor((x - bounds?.left) / dayWidth) });
+        const day = date.startOf("week").plus({ days: Math.floor((x - bounds?.left) / colWidth) });
 
-        const time = getEventTimeFromOffsets({
-            height: ref.current?.offsetHeight,
+        const time = getEventSlotFromOffsets({
+            height: bounds?.height,
             bottom: offset || 0,
-            top: (offset || 0)
+            top: (offset || 0),
+            day,
         });
-        const start = roundDateTime(time.start);
 
-        return day.set({ hour: start.hour, minute: start.minute, second: start.second, millisecond: start.millisecond });
-    }, [date]);
+        return floorDateTime(time.start);
+    }, [bounds?.top, bounds?.left, bounds?.height, date, colWidth]);
 
     const onMouseDown = useCallback((e: MouseEvent) => {
         const target = e.target as HTMLElement;

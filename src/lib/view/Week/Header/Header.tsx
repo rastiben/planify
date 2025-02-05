@@ -1,6 +1,6 @@
 import { Interval } from "luxon";
 import Day from "./Day.tsx";
-import { usePlanify } from "../../../contexts/Planify.context.ts";
+import { usePlanify } from "../../../contexts/Planify.context.tsx";
 
 const Header = () => {
     const {date} = usePlanify();

@@ -1,6 +1,7 @@
 import { PlanfiyDaySlots, PlanifyEvent } from "../types.ts";
 import { DateTime, Interval } from "luxon";
 import { CALENDAR_MAX_TIME } from "../constants.ts";
+import { ceilDateTime } from "./date.ts";
 
 export const getSlotsByDays = (events: PlanifyEvent[]) => {
     return events.reduce<PlanfiyDaySlots>((acc, event) => {
@@ -18,10 +19,11 @@ const timeToNumber = (time: string): number => {
     return hours * 60 + minutes;
 };
 
-const minutesToTime = (minutes) => {
+const minutesToTime = (minutes: number, day: DateTime) => {
     const hours = Math.floor(minutes / 60);
     const mins = Math.round(minutes % 60);
-    return DateTime.now().set({ hour: hours, minute: mins });
+
+    return day.plus({ hour: hours, minute: mins });
 };
 
 export const getEventOffset = ({ height, start, end }: { height: number | undefined; start: DateTime; end: DateTime }) => {
@@ -40,11 +42,13 @@ export const getEventOffset = ({ height, start, end }: { height: number | undefi
     };
 };
 
-export const getEventTimeFromOffsets = ({
+export const getEventSlotFromOffsets = ({
     top,
     bottom,
-    height
+    height,
+    day,
 }: {
+    day: DateTime;
     top?: number | null;
     bottom?: number | null;
     height: number | undefined;
@@ -54,8 +58,8 @@ export const getEventTimeFromOffsets = ({
     const offsetEnd = (bottom * maxTime) / height;
 
     return {
-        start: minutesToTime(offsetStart),
-        end: minutesToTime(offsetEnd)
+        start: minutesToTime(offsetStart, day),
+        end: minutesToTime(offsetEnd, day),
     };
 };
 
@@ -66,14 +70,14 @@ export const getEventDaySlot = (event: Interval, date: DateTime) => {
 
     if (isStartDate && isEndDate) {
         return {
-            start: event.start,
-            end: event.end,
+            start: event.start!,
+            end: event.end!,
         }
     }
 
     if (isStartDate) {
         return {
-            start: event.start,
+            start: event.start!,
             end: date.endOf("day"),
         }
     }
@@ -81,7 +85,7 @@ export const getEventDaySlot = (event: Interval, date: DateTime) => {
     if (isEndDate) {
         return {
             start: date.startOf("day"),
-            end: event.end,
+            end: event.end!,
         }
     }
 

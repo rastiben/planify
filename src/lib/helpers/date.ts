@@ -8,22 +8,39 @@ interface IntervalMap {
     quarter: number;
 }
 
-export const roundDateTime = (date: DateTime, roundTo: RoundingInterval | number = 60): DateTime => {
-    const intervals: IntervalMap = {
-        'hour': 60,
-        'quarter': 15
-    };
+const intervals: IntervalMap = {
+    'hour': 60,
+    'quarter': 15
+};
 
-    const interval = typeof roundTo === 'string'
+export const getIntervalToRoundTo = (roundTo: RoundingInterval | number = 60) => {
+    return typeof roundTo === 'string'
         ? (intervals[roundTo] || 60)
         : roundTo;
+};
 
-    const minutes = date.minute;
-    const roundedMinutes = Math.floor(minutes / interval) * interval;
-
+export const getUpdatedRoundedDate = (date: DateTime, roundedMinutes: number) => {
     return date.set({
         minute: roundedMinutes,
         second: 0,
         millisecond: 0
     });
+};
+
+export const floorDateTime = (date: DateTime, roundTo: RoundingInterval | number = 60): DateTime => {
+    const interval = getIntervalToRoundTo(roundTo);
+
+    const minutes = date.minute;
+    const roundedMinutes = Math.floor(minutes / interval) * interval;
+
+    return getUpdatedRoundedDate(date, roundedMinutes)
+};
+
+export const ceilDateTime = (date: DateTime, roundTo: RoundingInterval | number = 60): DateTime => {
+    const interval = getIntervalToRoundTo(roundTo);
+
+    const minutes = date.minute;
+    const roundedMinutes = Math.ceil(minutes / interval) * interval;
+
+    return getUpdatedRoundedDate(date, roundedMinutes)
 };

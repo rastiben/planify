@@ -1,28 +1,17 @@
 import { DateTime, Interval } from "luxon";
-import { usePlanify } from "../../../contexts/Planify.context.ts";
+import { usePlanify } from "../../../contexts/Planify.context.tsx";
 import Event from "./Event.tsx";
-import { useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { getEventDaySlot, getEventOffset } from "../../../helpers/events.ts";
-import useResizeObserver from "use-resize-observer";
 
 type DayProps = {
     day: DateTime;
 }
 
 const Day = ({ day }: DayProps) => {
-    const { events, selectedRange } = usePlanify();
-    const ref = useRef<HTMLDivElement | null>(null);
+    const { events, bounds, selectedRange } = usePlanify();
     const date = DateTime.now();
     const range = Interval.fromDateTimes(date.startOf("day"), date.endOf("day"));
-    const [height, setHeight] = useState<number | undefined>(undefined);
-
-    useResizeObserver({
-        ref: document.body,
-        onResize: () => {
-            const height = ref.current?.parentElement?.clientHeight;
-            setHeight(height);
-        }
-    });
 
     const daySlots = events[day.toISODate()];
 
@@ -36,11 +25,11 @@ const Day = ({ day }: DayProps) => {
 
     const offsets = useMemo(() => {
         if (!selectedRangeSlot) return undefined;
-        return getEventOffset({ height, start: selectedRangeSlot.start!, end: selectedRangeSlot.end! });
-    }, [selectedRangeSlot, height]);
+        return getEventOffset({ height: bounds?.height, start: selectedRangeSlot.start!, end: selectedRangeSlot.end! });
+    }, [selectedRangeSlot, bounds]);
 
     return (
-        <div ref={ref} className="planify-week--body--day">
+        <div className="planify-week--body--day">
             {selectedRangeSlot && (
                 <div style={{ transform: `translateY(${offsets?.start}px)`, height: `${offsets?.end - offsets?.start}px` }} className="planify-week--selected-range" />
             )}
