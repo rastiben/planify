@@ -81,8 +81,14 @@
                         position: relative;
                         z-index: 1;
                         flex: 1;
+                        display: flex;
+                        flex-direction: column;
                         border-bottom: 1px solid transparent;
-                        min-height: 30px;
+
+                        .planify-week--body--quarter-row {
+                            flex: 1;
+                            min-height: 10px;
+                        }
 
                         &:not(:last-child) {
                             border-bottom: 1px solid black;

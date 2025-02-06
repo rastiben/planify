@@ -1,10 +1,11 @@
 import useResizeObserver from "use-resize-observer";
-import useSelection from "../../../hooks/useSelection.ts";
 import { usePlanify } from "../../../contexts/Planify.context.tsx";
+import { CALENDAR_DAY_WIDTH, CALENDAR_QUARTER_HEIGHT } from "../../../constants.ts";
+import { useRef } from "react";
 
 const useWeek = () => {
     const { setBounds, setColWidth, setRowHeight } = usePlanify();
-    const { ref } = useSelection();
+    const ref = useRef<HTMLDivElement | null>(null);
 
     useResizeObserver({
         ref: ref,
@@ -13,10 +14,10 @@ const useWeek = () => {
             if (!width) return;
 
             const colWidth = width / 7;
-            const rowHeight = height / 24;
+            const rowHeight = height / (24 * 3);
 
-            setColWidth(colWidth > 200 ? colWidth : 200);
-            setRowHeight(rowHeight > 30 ? rowHeight : 30);
+            setColWidth(colWidth > CALENDAR_DAY_WIDTH ? colWidth : CALENDAR_DAY_WIDTH);
+            setRowHeight(rowHeight > CALENDAR_QUARTER_HEIGHT ? rowHeight : CALENDAR_QUARTER_HEIGHT);
             setBounds(ref.current?.getBoundingClientRect());
         }
     });

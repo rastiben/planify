@@ -5,15 +5,9 @@ import { DateTime, Interval } from "luxon";
 type PlanifyContextProviderProps = {
     date: DateTime;
     events: PlanfiyDaySlots;
-    selectedRange: Interval | null,
-    setSelectedRange: (selectedRange: Interval | null) => void;
 }
 
 type PlanifyContextProps = PlanifyContextProviderProps & {
-    date: DateTime;
-    events: PlanfiyDaySlots;
-    selectedRange: Interval | null,
-    setSelectedRange: (selectedRange: Interval | null) => void;
     rowHeight: number;
     setRowHeight: (rowHeight: number) => void;
     colWidth: number;

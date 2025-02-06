@@ -37,7 +37,7 @@ const Event = ({ event, day }: EventProps) => {
     });
     const { ref: bottomResizeRef } = useResize({
         onResize: (date) => {
-            let computedDate = date.plus({ hour: 1 });
+            let computedDate = date.plus({ minutes: 15 });
 
             if (computedDate <= currentEvent.start) return;
 
@@ -98,7 +98,7 @@ const Event = ({ event, day }: EventProps) => {
                     left: -colWidth * weekday,
                     right: (6 - weekday) * colWidth,
                     top: 0,
-                    bottom: 24 * rowHeight - eventHeight
+                    bottom: (24 * 3) * rowHeight - eventHeight
                 }}
                 nodeRef={ref}
                 grid={[colWidth, rowHeight]}

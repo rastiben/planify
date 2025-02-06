@@ -15,7 +15,6 @@ const ViewsComponent = {
 const Planify = () => {
     const [date, setDate] = useState(DateTime.now());
     const [view, setView] = useState(VIEWS.Week);
-    const [selectedRange, setSelectedRange] = useState<Interval | null>(null);
     const [events, setEvents] = useState<PlanifyEvent[]>([{
         id: "1",
         start: date.startOf("week").set({ hour: 12, minute: 0 }),
@@ -33,7 +32,7 @@ const Planify = () => {
     const ViewComponent = ViewsComponent[view];
 
     return (
-        <PlanifyProvider value={{ date, events: computedEvents, selectedRange, setSelectedRange }}>
+        <PlanifyProvider value={{ date, events: computedEvents }}>
             <div className="planify">
                 <ViewComponent />
             </div>

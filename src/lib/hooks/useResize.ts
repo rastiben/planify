@@ -24,7 +24,7 @@ const useResize = ({ onResize }: useResizeProps) => {
             day,
         });
 
-        return floorDateTime(time.start);
+        return floorDateTime(time.start, "quarter");
     }, [date, bounds, colWidth]);
 
     const onMouseDown = useCallback(() => {
@@ -36,7 +36,7 @@ const useResize = ({ onResize }: useResizeProps) => {
 
         const date = getSelectedDate({ x: e.x, y: e.y });
 
-        onResize(date);
+        onResize(floorDateTime(date, "quarter"));
     }, [isResizing, getSelectedDate, onResize]);
 
     const onMouseUp = useCallback(() => {
