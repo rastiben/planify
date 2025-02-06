@@ -16,7 +16,7 @@ type EventProps = {
 }
 
 const Event = ({ event, day }: EventProps) => {
-    const { date, bounds, colWidth, rowHeight } = usePlanify();
+    const { date, bounds, showWeekEnds, colWidth, rowHeight } = usePlanify();
     const ref = useRef<HTMLDivElement | null>(null);
     const [currentEvent, setCurrentEvent] = useState<PlanifyEvent>(event);
     const [isDragging, setIsDragging] = useState(false);
@@ -91,12 +91,14 @@ const Event = ({ event, day }: EventProps) => {
                 : 0
         , [offsets?.end, offsets?.start]);
 
+    const numberOfVisibleDays = showWeekEnds ? 6 : 4;
+
     return (
         <>
             <Draggable
                 bounds={{
                     left: -colWidth * weekday,
-                    right: (6 - weekday) * colWidth,
+                    right: (numberOfVisibleDays - weekday) * colWidth,
                     top: 0,
                     bottom: (24 * 3) * rowHeight - eventHeight
                 }}

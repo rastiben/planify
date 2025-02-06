@@ -6,9 +6,11 @@ import Day from "./Body/Day.tsx";
 import useWeek from "./hooks/useWeek.ts";
 
 const Week = () => {
-    const { date } = usePlanify();
+    const { date, showWeekEnds } = usePlanify();
     const { ref } = useWeek();
-    const range = Interval.fromDateTimes(date.startOf("week"), date.endOf("week"));
+
+    const numberOfVisibleDays = showWeekEnds ? 7 : 5;
+    const range = Interval.fromDateTimes(date.startOf("week"), date.startOf("week").plus({ day: numberOfVisibleDays }));
 
     return (
         <div className="planify-week">

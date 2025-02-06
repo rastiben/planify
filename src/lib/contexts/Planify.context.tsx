@@ -1,10 +1,12 @@
 import { createContext, PropsWithChildren, useContext, useState } from "react";
 import { PlanfiyDaySlots } from "../types.ts";
-import { DateTime, Interval } from "luxon";
+import { DateTime } from "luxon";
 
 type PlanifyContextProviderProps = {
     date: DateTime;
     events: PlanfiyDaySlots;
+    showWeekEnds: boolean;
+    setShowWeekEnds: (showWeekEnds: boolean) => void;
 }
 
 type PlanifyContextProps = PlanifyContextProviderProps & {

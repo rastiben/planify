@@ -4,8 +4,9 @@ import { CALENDAR_DAY_WIDTH, CALENDAR_QUARTER_HEIGHT } from "../../../constants.
 import { useRef } from "react";
 
 const useWeek = () => {
-    const { setBounds, setColWidth, setRowHeight } = usePlanify();
+    const { showWeekEnds, setBounds, setColWidth, setRowHeight } = usePlanify();
     const ref = useRef<HTMLDivElement | null>(null);
+
 
     useResizeObserver({
         ref: ref,
@@ -13,7 +14,9 @@ const useWeek = () => {
             if (!height) return;
             if (!width) return;
 
-            const colWidth = width / 7;
+            const numberOfVisibleDays = showWeekEnds ? 7 : 5;
+
+            const colWidth = width / numberOfVisibleDays;
             const rowHeight = height / (24 * 3);
 
             setColWidth(colWidth > CALENDAR_DAY_WIDTH ? colWidth : CALENDAR_DAY_WIDTH);
