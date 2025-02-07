@@ -9,6 +9,7 @@ import { DateTime, Interval } from "luxon";
 import Draggable from "react-draggable";
 import { usePlanify } from "../../../contexts/Planify.context.tsx";
 import useResize from "../../../hooks/useResize.ts";
+import { getCurrentLocation } from "../../../helpers/location.ts";
 
 type EventProps = {
     event: PlanifyEvent;
@@ -68,7 +69,7 @@ const Event = ({ event, day }: EventProps) => {
             top: data.y,
             day,
         });
-        const newDay = date.startOf("week").plus({ days: Math.round(data.x / colWidth) });
+        const { day: newDay } = getCurrentLocation({ date, boundLeft: data.x, dayWidth: colWidth });
 
         setCurrentEvent(prev => ({
             ...prev,

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { DateTime, Interval, Settings } from "luxon";
 import { PlanifyProvider } from "./contexts/Planify.context.tsx";
-import { VIEWS, PlanifyEvent } from "./types.ts";
+import { VIEWS, PlanifyEvent, PlanifyResource } from "./types.ts";
 import Week from "./view/Week/Week.tsx";
 import "./index.css";
 import { getSlotsByDays } from "./helpers/events.ts";
@@ -25,6 +25,13 @@ const Planify = () => {
         start: date.startOf("week").plus({ day: 1 }).set({ hour: 12, minute: 0 }),
         end: date.startOf("week").plus({ day: 2 }).set({ hour: 14, minute: 0 })
     }]);
+    const [resources, setResources] = useState<PlanifyResource[]>([{
+        id: "1",
+        title: "Benoit Rastier",
+    }, {
+        id: "2",
+        title: "Matthias Etchegaray"
+    }]);
 
     const computedEvents = useMemo(() => {
         return getSlotsByDays(events);
@@ -33,7 +40,7 @@ const Planify = () => {
     const ViewComponent = ViewsComponent[view];
 
     return (
-        <PlanifyProvider value={{ date, events: computedEvents, showWeekEnds, setShowWeekEnds }}>
+        <PlanifyProvider value={{ date, events: computedEvents, showWeekEnds, resources, setShowWeekEnds }}>
             <div className="planify">
                 <ViewComponent />
             </div>

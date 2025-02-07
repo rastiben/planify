@@ -2,12 +2,14 @@ import { DateTime, Interval } from "luxon";
 import { usePlanify } from "../../../contexts/Planify.context.tsx";
 import Event from "./Event.tsx";
 import SelectedRange from "./SelectedRange.tsx";
+import { PlanifyResource } from "../../../types.ts";
 
 type DayProps = {
+    resource: PlanifyResource;
     day: DateTime;
 }
 
-const Day = ({ day }: DayProps) => {
+const Day = ({ day, resource }: DayProps) => {
     const { events } = usePlanify();
     const date = DateTime.now();
     const range = Interval.fromDateTimes(date.startOf("day"), date.endOf("day"));

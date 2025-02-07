@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { DateTime } from "luxon";
 import { getEventSlotFromOffsets } from "../helpers/events.ts";
 import { floorDateTime } from "../helpers/date.ts";
+import { getCurrentLocation } from "../helpers/location.ts";
 
 type useResizeProps = {
     onResize: (date: DateTime) => void;
@@ -15,7 +16,7 @@ const useResize = ({ onResize }: useResizeProps) => {
 
     const getSelectedDate = useCallback(({ x, y }: { x: number; y: number }) => {
         const offset = y - bounds?.top;
-        const day = date.startOf("week").plus({ days: Math.floor((x - bounds?.left) / colWidth) });
+        const { day } = getCurrentLocation({ date, boundLeft: x - bounds?.left, dayWidth: colWidth });
 
         const time = getEventSlotFromOffsets({
             height: bounds?.height,

@@ -3,6 +3,7 @@ import { DateTime, Interval } from "luxon";
 import { usePlanify } from "../../contexts/Planify.context.tsx";
 import { getEventSlotFromOffsets } from "../../helpers/events.ts";
 import { floorDateTime } from "../../helpers/date.ts";
+import { getCurrentLocation } from "../../helpers/location.ts";
 
 const useSelection = () => {
     const { bounds, date, colWidth } = usePlanify();
@@ -12,7 +13,7 @@ const useSelection = () => {
 
     const getSelectedDate = useCallback(({ x, y }: { x: number; y: number }) => {
         const offset = y - bounds?.top;
-        const day = date.startOf("week").plus({ days: Math.floor((x - bounds?.left) / colWidth) });
+        const { day } = getCurrentLocation({ date, boundLeft: x - bounds?.left, dayWidth: colWidth });
 
         const time = getEventSlotFromOffsets({
             height: bounds?.height,

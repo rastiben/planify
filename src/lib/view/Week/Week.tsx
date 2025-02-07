@@ -6,7 +6,7 @@ import Day from "./Body/Day.tsx";
 import useWeek from "./hooks/useWeek.ts";
 
 const Week = () => {
-    const { date, showWeekEnds } = usePlanify();
+    const { date, resources, showWeekEnds } = usePlanify();
     const { ref } = useWeek();
 
     const numberOfVisibleDays = showWeekEnds ? 7 : 5;
@@ -19,7 +19,9 @@ const Week = () => {
                 <Time/>
                 <div ref={ref} className="planify-week--body--days">
                     {range.splitBy({day: 1}).map((day) => {
-                        return <Day key={day.toISO()} day={day.start!}/>;
+                        return resources.map((resource) => {
+                            return <Day key={day.toISO()} resource={resource} day={day.start!}/>;
+                        })
                     })}
                 </div>
             </div>

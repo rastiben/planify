@@ -15,3 +15,8 @@ export type PlanifyEvent = {
 export type PlanfiyDaySlots = {
     [k: string]: PlanifyEvent[];
 };
+
+export type PlanifyResource = {
+    id: string;
+    title: string;
+}
