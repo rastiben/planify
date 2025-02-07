@@ -3,14 +3,16 @@ import { DateTime, Interval } from "luxon";
 import { getEventDaySlot, getEventOffset } from "../../../helpers/events.ts";
 import { usePlanify } from "../../../contexts/Planify.context.tsx";
 import useSelection from "../../hooks/useSelection.ts";
+import { PlanifyResource } from "../../../types.ts";
 
 type SelectedRangeProps = {
     day: DateTime;
+    resource: PlanifyResource;
 }
 
-const SelectedRange = ({ day }: SelectedRangeProps) => {
+const SelectedRange = ({ day, resource }: SelectedRangeProps) => {
     const { bounds } = usePlanify();
-    const { selectedRange, setSelectedRange } = useSelection();
+    const { selectedRange, selectedResource } = useSelection();
 
     const selectedRangeSlot = useMemo(() => {
         if (!selectedRange) return undefined;
@@ -25,7 +27,10 @@ const SelectedRange = ({ day }: SelectedRangeProps) => {
         return getEventOffset({ height: bounds?.height, start: selectedRangeSlot.start!, end: selectedRangeSlot.end! });
     }, [selectedRangeSlot, bounds]);
 
+    console.log(selectedResource)
+
     if (!selectedRangeSlot) return null;
+    if (selectedResource?.id !== resource.id) return null;
 
     return (
         <div style={{ transform: `translateY(${offsets?.start}px)`, height: `${offsets?.end - offsets?.start}px` }} className="planify-week--selected-range" />

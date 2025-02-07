@@ -1,32 +1,25 @@
 import { DateTime } from "luxon";
+import { PlanifyResource } from "../types.ts";
 
 type GetCurrentLocationProps = {
     date: DateTime;
     boundLeft: number;
     dayWidth: number;
+    resources: PlanifyResource[];
 };
 
 /*
     @return Return day and resource
  */
-export const getCurrentLocation = ({ date, boundLeft, dayWidth }: GetCurrentLocationProps) => {
-    // |       |       |       |       |       |       |       |
-    //  R1 | R2 R1 | R2 R1 | R2 R1 | R2 R1 | R2 R1 | R2 R1 | R2
-    //
-    // 200px per day
-    //
-    // so one ressource = 200px / number of resources = here 100px
-    //
-    // so if x = 250px = Day 2 and resource 1
-    //
-    // if x = 350 = Day 2 and resource 2
-    //
-    // so Math.floor((x - day.left) / one ressource)
-    //
-    // si x = 250px and day.left = 200px so (x - day.left) = 50px and Math.floor(50 / 100) = 0 (index of the resource)
+export const getCurrentLocation = ({ date, boundLeft, dayWidth, resources }: GetCurrentLocationProps) => {
     const day = date.startOf("week").plus({ days: Math.floor(boundLeft / dayWidth) });
+
+    const resourceWidth = dayWidth / resources.length;
+    const dayLeft = (day.weekday - 1) * dayWidth;
+    const resourceIndex = Math.floor((boundLeft - dayLeft) / resourceWidth);
 
     return {
         day,
+        resource: resources?.[resourceIndex] || null,
     }
 };

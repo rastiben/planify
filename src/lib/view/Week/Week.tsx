@@ -20,7 +20,7 @@ const Week = () => {
                 <div ref={ref} className="planify-week--body--days">
                     {range.splitBy({day: 1}).map((day) => {
                         return resources.map((resource) => {
-                            return <Day key={day.toISO()} resource={resource} day={day.start!}/>;
+                            return <Day key={`${resource.id}-${day.toISO()}`} resource={resource} day={day.start!}/>;
                         })
                     })}
                 </div>

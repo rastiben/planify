@@ -26,11 +26,19 @@
 
                 .planify-week--header--day {
                     text-align: center;
+                    position: relative;
                     padding-top: 10px;
                     flex: 1;
 
                     &:not(:last-child) {
-                        border-right: 1px solid black;
+                        &:after {
+                            content: "";
+                            position: absolute;
+                            right: 0;
+                            top: 0;
+                            bottom: 0;
+                            border-right: 1px solid black;
+                        }
                     }
 
                     .planify-week--header--day-name {
@@ -123,6 +131,7 @@
             .planify-week--event {
                 position: absolute;
                 top: 0;
+                width: 100%;
                 border-radius: 5px;
                 color: #FFFFFF;
                 font-size: 14px;

@@ -4,16 +4,18 @@ import { usePlanify } from "../../contexts/Planify.context.tsx";
 import { getEventSlotFromOffsets } from "../../helpers/events.ts";
 import { floorDateTime } from "../../helpers/date.ts";
 import { getCurrentLocation } from "../../helpers/location.ts";
+import { PlanifyResource } from "../../types.ts";
 
 const useSelection = () => {
-    const { bounds, date, colWidth } = usePlanify();
+    const { bounds, date, colWidth, planifyRef, resources } = usePlanify();
     const [selectedRange, setSelectedRange] = useState<Interval | null>(null);
+    const [selectedResource, setSelectedResource] = useState<PlanifyResource | null>(null);
     const isSelecting = useRef(false);
     const selectedStart = useRef<DateTime | null>(null);
 
-    const getSelectedDate = useCallback(({ x, y }: { x: number; y: number }) => {
-        const offset = y - bounds?.top;
-        const { day } = getCurrentLocation({ date, boundLeft: x - bounds?.left, dayWidth: colWidth });
+    const getSelectedLocation = useCallback(({ x, y }: { x: number; y: number }) => {
+        const offset = y - bounds?.top + planifyRef.current?.scrollTop;
+        const { day, resource } = getCurrentLocation({ date, resources, boundLeft: x - bounds?.left, dayWidth: colWidth });
 
         const time = getEventSlotFromOffsets({
             height: bounds?.height,
@@ -22,28 +24,32 @@ const useSelection = () => {
             day,
         });
 
-        return floorDateTime(time.start, "quarter");
-    }, [bounds?.top, bounds?.left, bounds?.height, date, colWidth]);
+        return {
+            time: floorDateTime(time.start, "quarter"),
+            resource,
+        };
+    }, [bounds?.top, bounds?.left, bounds?.height, date, resources, colWidth]);
 
     const onMouseDown = useCallback((e: MouseEvent) => {
         const target = e.target as HTMLElement;
         if (target.classList.contains("planify-week--body--quarter-row")) {
             isSelecting.current = true;
 
-            const selectedDateStart = getSelectedDate({ x: e.x, y: e.y });
+            const { time: selectedDateStart, resource } = getSelectedLocation({ x: e.x, y: e.y });
             const selectedDateEnd = selectedDateStart.plus({ minute: 15 });
 
             selectedStart.current = selectedDateStart;
             setSelectedRange(Interval.fromDateTimes(selectedDateStart, selectedDateEnd));
+            setSelectedResource(resource);
         }
-    }, [getSelectedDate, setSelectedRange]);
+    }, [getSelectedLocation, setSelectedRange]);
 
     const onMouseMove = useCallback((e: MouseEvent) => {
         if (!isSelecting.current) return;
         if (!selectedRange) return;
         if (!selectedStart) return;
 
-        const selectedDateStart = getSelectedDate({ x: e.x, y: e.y });
+        const { time: selectedDateStart } = getSelectedLocation({ x: e.x, y: e.y });
 
         if (!Interval.fromDateTimes(date.startOf("week"), date.endOf("week")).contains(selectedDateStart)) return;
 
@@ -52,13 +58,16 @@ const useSelection = () => {
             selectedDateStart >= selectedStart.current ? selectedDateStart.plus({ minute: 15 }) : (selectedStart.current!).plus({ minute: 15 })
         ));
 
-    }, [isSelecting, selectedRange, selectedStart, getSelectedDate, date, setSelectedRange]);
+    }, [isSelecting, selectedRange, selectedStart, getSelectedLocation, date, setSelectedRange]);
 
     const onMouseUp = useCallback((e: MouseEvent) => {
         const target = e.target as HTMLElement;
         isSelecting.current = false;
 
-        if (!target.classList.contains("planify-week--body--quarter-row")) setSelectedRange(null);
+        if (!target.classList.contains("planify-week--body--quarter-row")) {
+            setSelectedRange(null);
+            setSelectedResource(null);
+        }
     }, [setSelectedRange]);
 
     useEffect(() => {
@@ -74,7 +83,8 @@ const useSelection = () => {
 
     return {
         selectedRange,
-        setSelectedRange
+        setSelectedRange,
+        selectedResource
     }
 };
 

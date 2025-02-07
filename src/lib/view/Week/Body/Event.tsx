@@ -118,7 +118,6 @@ const Event = ({ event, day }: EventProps) => {
                     ref={ref}
                     style={{
                         height: `${eventHeight}px`,
-                        width: `${colWidth}px`,
                         opacity: isDragging ? 0.7 : 1,
                         background: "#28bbb8"
                     }}

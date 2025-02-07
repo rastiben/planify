@@ -10,12 +10,12 @@ type useResizeProps = {
 }
 
 const useResize = ({ onResize }: useResizeProps) => {
-    const { date, bounds, colWidth } = usePlanify();
+    const { date, bounds, colWidth, planifyRef } = usePlanify();
     const [isResizing, setIsResizing] = useState(false);
     const ref = useRef<HTMLDivElement | null>(null);
 
     const getSelectedDate = useCallback(({ x, y }: { x: number; y: number }) => {
-        const offset = y - bounds?.top;
+        const offset = y - bounds?.top + planifyRef.current?.scrollTop;
         const { day } = getCurrentLocation({ date, boundLeft: x - bounds?.left, dayWidth: colWidth });
 
         const time = getEventSlotFromOffsets({

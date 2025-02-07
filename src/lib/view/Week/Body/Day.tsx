@@ -14,11 +14,11 @@ const Day = ({ day, resource }: DayProps) => {
     const date = DateTime.now();
     const range = Interval.fromDateTimes(date.startOf("day"), date.endOf("day"));
 
-    const daySlots = events[day.toISODate()];
+    const daySlots = events[day.toISODate()]?.filter(({resourceId}) => resourceId === resource.id);
 
     return (
         <div className="planify-week--body--day">
-            <SelectedRange day={day} />
+            <SelectedRange day={day} resource={resource}/>
             <div className="planify-week--events">
                 {daySlots?.map((event) => {
                     return <Event key={event.id} event={event} day={day}/>;

@@ -10,6 +10,7 @@ export type PlanifyEvent = {
     id: string;
     start: DateTime;
     end: DateTime;
+    resourceId: string;
 }
 
 export type PlanfiyDaySlots = {

@@ -7,7 +7,6 @@ const useWeek = () => {
     const { showWeekEnds, setBounds, setColWidth, setRowHeight } = usePlanify();
     const ref = useRef<HTMLDivElement | null>(null);
 
-
     useResizeObserver({
         ref: ref,
         onResize: ({ height, width }) => {

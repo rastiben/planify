@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useContext, useState } from "react";
+import { createContext, MutableRefObject, PropsWithChildren, useContext, useState } from "react";
 import { PlanfiyDaySlots, PlanifyResource } from "../types.ts";
 import { DateTime } from "luxon";
 
@@ -8,6 +8,7 @@ type PlanifyContextProviderProps = {
     resources: PlanifyResource[];
     showWeekEnds: boolean;
     setShowWeekEnds: (showWeekEnds: boolean) => void;
+    planifyRef: MutableRefObject<HTMLDivElement | null>;
 }
 
 type PlanifyContextProps = PlanifyContextProviderProps & {
