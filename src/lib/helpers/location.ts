@@ -5,7 +5,7 @@ type GetCurrentLocationProps = {
     date: DateTime;
     boundLeft: number;
     dayWidth: number;
-    resources: PlanifyResource[];
+    resources?: PlanifyResource[] | null;
 };
 
 /*
@@ -13,10 +13,13 @@ type GetCurrentLocationProps = {
  */
 export const getCurrentLocation = ({ date, boundLeft, dayWidth, resources }: GetCurrentLocationProps) => {
     const day = date.startOf("week").plus({ days: Math.floor(boundLeft / dayWidth) });
+    let resourceIndex = -1;
 
-    const resourceWidth = dayWidth / resources.length;
-    const dayLeft = (day.weekday - 1) * dayWidth;
-    const resourceIndex = Math.floor((boundLeft - dayLeft) / resourceWidth);
+    if (resources) {
+        const resourceWidth = dayWidth / resources.length;
+        const dayLeft = (day.weekday - 1) * dayWidth;
+        resourceIndex = Math.floor((boundLeft - dayLeft) / resourceWidth);
+    }
 
     return {
         day,

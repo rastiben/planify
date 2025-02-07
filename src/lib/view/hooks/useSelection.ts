@@ -14,8 +14,8 @@ const useSelection = () => {
     const selectedStart = useRef<DateTime | null>(null);
 
     const getSelectedLocation = useCallback(({ x, y }: { x: number; y: number }) => {
-        const offset = y - bounds?.top + planifyRef.current?.scrollTop;
-        const { day, resource } = getCurrentLocation({ date, resources, boundLeft: x - bounds?.left, dayWidth: colWidth });
+        const offset = y - (bounds?.top || 0) + (planifyRef.current?.scrollTop || 0);
+        const { day, resource } = getCurrentLocation({ date, resources, boundLeft: x - (bounds?.left || 0), dayWidth: colWidth });
 
         const time = getEventSlotFromOffsets({
             height: bounds?.height,
@@ -47,7 +47,7 @@ const useSelection = () => {
     const onMouseMove = useCallback((e: MouseEvent) => {
         if (!isSelecting.current) return;
         if (!selectedRange) return;
-        if (!selectedStart) return;
+        if (!selectedStart.current) return;
 
         const { time: selectedDateStart } = getSelectedLocation({ x: e.x, y: e.y });
 

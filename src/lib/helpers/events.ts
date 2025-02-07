@@ -1,7 +1,6 @@
 import { PlanfiyDaySlots, PlanifyEvent } from "../types.ts";
 import { DateTime, Interval } from "luxon";
 import { CALENDAR_MAX_TIME } from "../constants.ts";
-import { ceilDateTime } from "./date.ts";
 
 export const getSlotsByDays = (events: PlanifyEvent[]) => {
     return events.reduce<PlanfiyDaySlots>((acc, event) => {
@@ -54,8 +53,8 @@ export const getEventSlotFromOffsets = ({
     height: number | undefined;
 }) => {
     const maxTime = timeToNumber(CALENDAR_MAX_TIME);
-    const offsetStart = (top * maxTime) / height;
-    const offsetEnd = (bottom * maxTime) / height;
+    const offsetStart = ((top || 0) * maxTime) / (height || 0);
+    const offsetEnd = ((bottom || 0)  * maxTime) / (height || 0);
 
     return {
         start: minutesToTime(offsetStart, day),

@@ -15,8 +15,8 @@ const useResize = ({ onResize }: useResizeProps) => {
     const ref = useRef<HTMLDivElement | null>(null);
 
     const getSelectedDate = useCallback(({ x, y }: { x: number; y: number }) => {
-        const offset = y - bounds?.top + planifyRef.current?.scrollTop;
-        const { day } = getCurrentLocation({ date, boundLeft: x - bounds?.left, dayWidth: colWidth });
+        const offset = y - (bounds?.top || 0) + (planifyRef.current?.scrollTop || 0);
+        const { day } = getCurrentLocation({ date, boundLeft: x - (bounds?.left || 0), dayWidth: colWidth });
 
         const time = getEventSlotFromOffsets({
             height: bounds?.height,

@@ -20,7 +20,7 @@ const useWeek = () => {
 
             setColWidth(colWidth > CALENDAR_DAY_WIDTH ? colWidth : CALENDAR_DAY_WIDTH);
             setRowHeight(rowHeight > CALENDAR_QUARTER_HEIGHT ? rowHeight : CALENDAR_QUARTER_HEIGHT);
-            setBounds(ref.current?.getBoundingClientRect());
+            setBounds(ref.current?.getBoundingClientRect() || null);
         }
     });
 

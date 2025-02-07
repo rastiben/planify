@@ -2,10 +2,10 @@ import { DateTime, Interval } from "luxon";
 import { usePlanify } from "../../../contexts/Planify.context.tsx";
 import Event from "./Event.tsx";
 import SelectedRange from "./SelectedRange.tsx";
-import { PlanifyResource } from "../../../types.ts";
+import { PlanifyEvent, PlanifyResource } from "../../../types.ts";
 
 type DayProps = {
-    resource: PlanifyResource;
+    resource?: PlanifyResource | null;
     day: DateTime;
 }
 
@@ -14,7 +14,7 @@ const Day = ({ day, resource }: DayProps) => {
     const date = DateTime.now();
     const range = Interval.fromDateTimes(date.startOf("day"), date.endOf("day"));
 
-    const daySlots = events[day.toISODate()]?.filter(({resourceId}) => resourceId === resource.id);
+    const daySlots: PlanifyEvent[] = events[day.toISODate() as string]?.filter(({resourceId}) => resource ? resourceId === resource.id : true);
 
     return (
         <div className="planify-week--body--day">

@@ -7,7 +7,7 @@ import { PlanifyResource } from "../../../types.ts";
 
 type SelectedRangeProps = {
     day: DateTime;
-    resource: PlanifyResource;
+    resource?: PlanifyResource | null;
 }
 
 const SelectedRange = ({ day, resource }: SelectedRangeProps) => {
@@ -27,10 +27,9 @@ const SelectedRange = ({ day, resource }: SelectedRangeProps) => {
         return getEventOffset({ height: bounds?.height, start: selectedRangeSlot.start!, end: selectedRangeSlot.end! });
     }, [selectedRangeSlot, bounds]);
 
-    console.log(selectedResource)
-
     if (!selectedRangeSlot) return null;
-    if (selectedResource?.id !== resource.id) return null;
+    if (resource && selectedResource?.id !== resource.id) return null;
+    if (!offsets) return null;
 
     return (
         <div style={{ transform: `translateY(${offsets?.start}px)`, height: `${offsets?.end - offsets?.start}px` }} className="planify-week--selected-range" />

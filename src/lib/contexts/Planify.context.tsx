@@ -5,7 +5,7 @@ import { DateTime } from "luxon";
 type PlanifyContextProviderProps = {
     date: DateTime;
     events: PlanfiyDaySlots;
-    resources: PlanifyResource[];
+    resources: PlanifyResource[] | null;
     showWeekEnds: boolean;
     setShowWeekEnds: (showWeekEnds: boolean) => void;
     planifyRef: MutableRefObject<HTMLDivElement | null>;

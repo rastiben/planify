@@ -1,12 +1,12 @@
 import { PlanifyEvent } from "../../../types.ts";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
     getEventDaySlot,
     getEventOffset,
     getEventSlotFromOffsets,
 } from "../../../helpers/events.ts";
 import { DateTime, Interval } from "luxon";
-import Draggable from "react-draggable";
+import Draggable, { DraggableEventHandler } from "react-draggable";
 import { usePlanify } from "../../../contexts/Planify.context.tsx";
 import useResize from "../../../hooks/useResize.ts";
 import { getCurrentLocation } from "../../../helpers/location.ts";
@@ -61,8 +61,11 @@ const Event = ({ event, day }: EventProps) => {
 
     const weekday = day.weekday - 1;
 
-    const handleDragStop = (_, data) => {
+    const handleDragStop = useCallback<DraggableEventHandler>((_, data) => {
         setIsDragging(false);
+
+        if (!offsets) return;
+
         const time = getEventSlotFromOffsets({
             height: bounds?.height,
             bottom: data.y + (offsets?.end - offsets?.start),
@@ -84,7 +87,7 @@ const Event = ({ event, day }: EventProps) => {
                 day: newDay.day
             })
         }));
-    };
+    }, [offsets, bounds, day, date, colWidth]);
 
     const eventHeight = useMemo(() =>
             offsets?.end !== undefined && offsets?.start !== undefined
