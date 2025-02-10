@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PlanifyEvent } from "../types";
 import { usePlanify } from "../contexts/Planify.context.tsx";
+import { getCurrentLocation } from "../helpers/location.ts";
+import { getEventOffset, getEventSlotFromOffsets } from "../helpers/events.ts";
+import { floorDateTime } from "../helpers/date.ts";
 
 type Position = {
     x: number;
@@ -17,7 +20,7 @@ type UseDraggableProps = {
 };
 
 const useDraggable = ({ event, grid, onPositionChange }: UseDraggableProps) => {
-    const { bounds } = usePlanify();
+    const { date, resources, bounds, colWidth, rowHeight, planifyRef } = usePlanify();
     const ref = useRef<HTMLDivElement | null>(null);
     const ghostRef = useRef<HTMLDivElement | null>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -48,10 +51,28 @@ const useDraggable = ({ event, grid, onPositionChange }: UseDraggableProps) => {
         document.body.appendChild(ghost);
         ghostRef.current = ghost;
         return ghost;
-    }, [bounds?.left, bounds?.top]);
+    }, []);
+
+    const getSelectedDate = useCallback(({ x, y }: { x: number; y: number }) => {
+        const { day } = getCurrentLocation({
+            date,
+            boundLeft: x - (bounds?.left || 0) + (planifyRef.current?.scrollLeft || 0),
+            dayWidth: colWidth
+        });
+
+        const time = getEventSlotFromOffsets({
+            height: bounds?.height,
+            bottom: y || 0,
+            top: (y || 0),
+            day,
+        });
+
+        return floorDateTime(time.start, "quarter");
+    }, [bounds, planifyRef, date, colWidth]);
 
     const onMouseDown = useCallback((e: MouseEvent) => {
         if (!ref.current) return;
+        if (!(e.target as HTMLElement).closest(".planify-week--event--content")) return;
 
         e.preventDefault();
 
@@ -79,19 +100,29 @@ const useDraggable = ({ event, grid, onPositionChange }: UseDraggableProps) => {
 
         e.preventDefault();
 
-        console.log(isDragging, ghostRef.current);
 
-        // Calculate new position with offset
-        const deltaX = e.clientX - dragInfo.current.startX;
+
         const deltaY = e.clientY - dragInfo.current.startY;
-
-        // Calculate new position with snapping
-        const mouseX = dragInfo.current.initialOffsetX + deltaX;
         const mouseY = dragInfo.current.initialOffsetY + deltaY;
 
-        // Snap to nearest grid position
-        const newX = Math.floor(mouseX / grid.x) * grid.x + (bounds?.left || 0);
-        const newY = Math.round(mouseY / grid.y) * grid.y;
+        console.log(e.clientY, mouseY);
+
+        const day = getSelectedDate({ x: e.clientX, y: mouseY });
+
+        let newX;
+
+        const dayLeft = (day.weekday - 1) * colWidth;
+
+        if (resources) {
+            const resourceIdx = resources.findIndex((r) => r.id === event.resourceId);
+            newX = dayLeft + (colWidth / resources.length * resourceIdx) + (bounds?.left || 0);
+        } else {
+            newX = dayLeft + (bounds?.left || 0);
+        }
+
+        const offset = getEventOffset({ height: bounds?.height, start: day, end: day });
+
+        const newY = (offset?.start || 0);
 
         // Update position state
         setPosition({ x: newX, y: newY });
@@ -99,12 +130,10 @@ const useDraggable = ({ event, grid, onPositionChange }: UseDraggableProps) => {
         // Call the position change callback
         onPositionChange?.({ x: newX, y: newY });
 
-        console.log(ghostRef);
-
         // Update ghost element position
         ghostRef.current.style.left = `${newX}px`;
         ghostRef.current.style.top = `${newY}px`;
-    }, [isDragging, grid.x, grid.y, bounds, onPositionChange]);
+    }, [isDragging, date, bounds, planifyRef, colWidth, resources, rowHeight, onPositionChange, event]);
 
     const onMouseUp = useCallback((e: MouseEvent) => {
         setIsDragging(false);

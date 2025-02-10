@@ -15,7 +15,12 @@ const useSelection = () => {
 
     const getSelectedLocation = useCallback(({ x, y }: { x: number; y: number }) => {
         const offset = y - (bounds?.top || 0) + (planifyRef.current?.scrollTop || 0);
-        const { day, resource } = getCurrentLocation({ date, resources, boundLeft: x - (bounds?.left || 0), dayWidth: colWidth });
+        const { day, resource } = getCurrentLocation({
+            date,
+            resources,
+            boundLeft: x - (bounds?.left || 0) + (planifyRef.current?.scrollLeft || 0),
+            dayWidth: colWidth
+        });
 
         const time = getEventSlotFromOffsets({
             height: bounds?.height,

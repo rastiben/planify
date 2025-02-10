@@ -16,7 +16,11 @@ const useResize = ({ onResize }: useResizeProps) => {
 
     const getSelectedDate = useCallback(({ x, y }: { x: number; y: number }) => {
         const offset = y - (bounds?.top || 0) + (planifyRef.current?.scrollTop || 0);
-        const { day } = getCurrentLocation({ date, boundLeft: x - (bounds?.left || 0), dayWidth: colWidth });
+        const { day } = getCurrentLocation({
+            date,
+            boundLeft: x - (bounds?.left || 0) + (planifyRef.current?.scrollLeft || 0),
+            dayWidth: colWidth
+        });
 
         const time = getEventSlotFromOffsets({
             height: bounds?.height,
@@ -26,7 +30,7 @@ const useResize = ({ onResize }: useResizeProps) => {
         });
 
         return floorDateTime(time.start, "quarter");
-    }, [date, bounds, colWidth]);
+    }, [bounds, planifyRef, date, colWidth]);
 
     const onMouseDown = useCallback(() => {
         setIsResizing(true);

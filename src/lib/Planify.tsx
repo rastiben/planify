@@ -28,17 +28,17 @@ const Planify = () => {
         end: date.startOf("week").plus({ day: 2 }).set({ hour: 14, minute: 0 }),
         resourceId: "2",
     }]);
-    const [resources] = useState<PlanifyResource[] | null>([{
-        id: "1",
-        title: "Benoit Rastier",
-    }, {
-        id: "2",
-        title: "Matthias Etchegaray"
-    }, {
-        id: "3",
-        title: "Pierre Alain Grollaud"
-    }]);
-    //const [resources] = useState<PlanifyResource[] | null>(null);
+    // const [resources] = useState<PlanifyResource[] | null>([{
+    //     id: "1",
+    //     title: "Benoit Rastier",
+    // }, {
+    //     id: "2",
+    //     title: "Matthias Etchegaray"
+    // }, {
+    //     id: "3",
+    //     title: "Pierre Alain Grollaud"
+    // }]);
+    const [resources] = useState<PlanifyResource[] | null>(null);
 
     const computedEvents = useMemo(() => {
         return getSlotsByDays(events);

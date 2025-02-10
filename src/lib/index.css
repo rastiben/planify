@@ -127,39 +127,39 @@
         .planify-week--events {
             position: absolute;
             inset: 0;
-
-            .planify-week--event {
-                position: absolute;
-                top: 0;
-                width: 100%;
-                border-radius: 5px;
-                color: #FFFFFF;
-                font-size: 14px;
-                z-index: 2;
-
-                .planify-week--event--resizearea {
-                    position: absolute;
-                    left: 0;
-                    right: 0;
-                    height: 2px;
-                    cursor: ns-resize;
-                    z-index: 3;
-
-                    &.planify-week--event--resizearea__top {
-                        top: 0;
-                    }
-
-                    &.planify-week--event--resizearea__bottom {
-                        bottom: 0;
-                    }
-                }
-
-                .planify-week--event--content {
-                    padding: 2px;
-                    width: 100%;
-                    height: 100%;
-                }
-            }
         }
+    }
+}
+
+.planify-week--event {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    border-radius: 5px;
+    color: #FFFFFF;
+    font-size: 14px;
+    z-index: 2;
+
+    .planify-week--event--resizearea {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        cursor: ns-resize;
+        z-index: 3;
+
+        &.planify-week--event--resizearea__top {
+            top: 0;
+        }
+
+        &.planify-week--event--resizearea__bottom {
+            bottom: 0;
+        }
+    }
+
+    .planify-week--event--content {
+        padding: 2px;
+        width: 100%;
+        height: 100%;
     }
 }

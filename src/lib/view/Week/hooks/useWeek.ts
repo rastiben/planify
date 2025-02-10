@@ -18,6 +18,8 @@ const useWeek = () => {
             const colWidth = width / numberOfVisibleDays;
             const rowHeight = height / (24 * 3);
 
+            console.log(height);
+
             setColWidth(colWidth > CALENDAR_DAY_WIDTH ? colWidth : CALENDAR_DAY_WIDTH);
             setRowHeight(rowHeight > CALENDAR_QUARTER_HEIGHT ? rowHeight : CALENDAR_QUARTER_HEIGHT);
             setBounds(ref.current?.getBoundingClientRect() || null);
