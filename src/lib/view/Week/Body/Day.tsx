@@ -17,7 +17,7 @@ const Day = ({ day, resource }: DayProps) => {
     const daySlots: PlanifyEvent[] = events[day.toISODate() as string]?.filter(({resourceId}) => resource ? resourceId === resource.id : true);
 
     return (
-        <div className="planify-week--body--day">
+        <div data-date={day.toISODate()} data-resource={resource?.id} className="planify-week--body--day">
             <SelectedRange day={day} resource={resource}/>
             <div className="planify-week--events">
                 {daySlots?.map((event) => {

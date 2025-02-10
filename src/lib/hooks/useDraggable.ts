@@ -4,6 +4,8 @@ import { usePlanify } from "../contexts/Planify.context.tsx";
 import { getCurrentLocation } from "../helpers/location.ts";
 import { getEventOffset, getEventSlotFromOffsets } from "../helpers/events.ts";
 import { floorDateTime } from "../helpers/date.ts";
+import useAutoScroll from "./useAutoScroll.ts";
+import { DateTime } from "luxon";
 
 type Position = {
     x: number;
@@ -20,6 +22,7 @@ const useDraggable = ({ event, onPositionChange }: UseDraggableProps) => {
     const ref = useRef<HTMLDivElement | null>(null);
     const ghostRef = useRef<HTMLDivElement | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+    useAutoScroll({ isDragging });
     const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
 
     // Store the initial mouse position and element offset when dragging starts
@@ -30,24 +33,30 @@ const useDraggable = ({ event, onPositionChange }: UseDraggableProps) => {
         initialOffsetY: 0,
     });
 
-    const createGhostElement = useCallback((originalElement: HTMLDivElement) => {
-        const rect = originalElement.getBoundingClientRect();
-        const ghost = originalElement.cloneNode(true) as HTMLDivElement;
-        ghost.style.position = 'fixed';
+    const updateGhostElement = useCallback(({ date, top }: { date: DateTime; top: number }) => {
+        if (ghostRef.current) {
+            ghostRef.current.remove();
+            ghostRef.current = null;
+        }
+
+        const rect = ref.current?.getBoundingClientRect();
+        const ghost = ref.current?.cloneNode(true) as HTMLDivElement;
+        ghost.style.position = 'absolute';
         ghost.style.pointerEvents = 'none';
-        ghost.style.width = `${rect.width}px`;
+        ghost.style.width = `100%`;
         ghost.style.height = `${rect.height}px`;
-        ghost.style.left = `${rect.left}px`;
-        ghost.style.top = `${rect.top}px`;
+        ghost.style.top = `${top}px`;
         ghost.style.transform = 'none';
         ghost.style.margin = '0';
         ghost.style.zIndex = '1000';
         ghost.id = 'ghost-element';
 
-        document.body.appendChild(ghost);
+        const day = document.querySelector(`[data-date='${date.toISODate()}'][data-resource='${event.resourceId}']`);
+
+        day.appendChild(ghost);
         ghostRef.current = ghost;
         return ghost;
-    }, []);
+    }, [event.resourceId]);
 
     const getSelectedDate = useCallback(({ x, y }: { x: number; y: number }) => {
         const { day } = getCurrentLocation({
@@ -70,31 +79,27 @@ const useDraggable = ({ event, onPositionChange }: UseDraggableProps) => {
         if (!ghostRef.current) return;
 
         const deltaY = e.clientY - dragInfo.current.startY;
-        const mouseY = dragInfo.current.initialOffsetY + deltaY;
+        const mouseY = dragInfo.current.initialOffsetY + deltaY + (planifyRef.current?.scrollTop || 0);
 
         const day = getSelectedDate({ x: e.clientX, y: mouseY });
 
-        let newX;
-
-        const dayLeft = (day.weekday - 1) * colWidth;
-
-        if (resources) {
-            const resourceIdx = resources.findIndex((r) => r.id === event.resourceId);
-            newX = dayLeft + (colWidth / resources.length * resourceIdx) + (bounds?.left || 0);
-        } else {
-            newX = dayLeft + (bounds?.left || 0);
-        }
+        // let newX;
+        //
+        // const dayLeft = (day.weekday - 1) * colWidth;
+        //
+        // if (resources) {
+        //     const resourceIdx = resources.findIndex((r) => r.id === event.resourceId);
+        //     newX = dayLeft + (colWidth / resources.length * resourceIdx) + (bounds?.left || 0) - (planifyRef.current?.scrollLeft || 0);
+        // } else {
+        //     newX = dayLeft + (bounds?.left || 0) - (planifyRef.current?.scrollLeft || 0);
+        // }
 
         const offset = getEventOffset({ height: bounds?.height, start: day, end: day });
 
-        const newY = (offset?.start || 0);
+        const newY = (offset?.start || 0) - (bounds?.top || 0) - (planifyRef.current?.scrollTop || 0);
 
-        setPosition({ x: newX, y: newY });
-        ghostRef.current.style.left = `${newX}px`;
-        ghostRef.current.style.top = `${newY}px`;
-
-        return { x: newX, y: newY };
-    }, [bounds, colWidth, resources, event, getSelectedDate]);
+        updateGhostElement({ date: day, top: newY });
+    }, [planifyRef, getSelectedDate, bounds?.height, updateGhostElement]);
 
     const handleFreeDrag = useCallback((e: MouseEvent) => {
         if (!ghostRef.current) return;
@@ -133,8 +138,8 @@ const useDraggable = ({ event, onPositionChange }: UseDraggableProps) => {
         };
 
         // Create and position the ghost element
-        createGhostElement(ref.current);
-    }, [createGhostElement]);
+        updateGhostElement({ top: rect.top - (bounds?.top || 0), date: event.start });
+    }, [event, updateGhostElement]);
 
     const onMouseMove = useCallback((e: MouseEvent) => {
         if (!isDragging || !ghostRef.current) return;
@@ -147,15 +152,12 @@ const useDraggable = ({ event, onPositionChange }: UseDraggableProps) => {
             e.clientY >= bounds.top &&
             e.clientY <= bounds.bottom;
 
-        const newPosition = isWithinCalendar
-            ? handleCalendarDrag(e)
-            : handleFreeDrag(e);
-
-        // Call the position change callback
-        if (newPosition) {
-            onPositionChange?.(newPosition);
+        if (isWithinCalendar) {
+            handleCalendarDrag(e)
+        } else {
+            handleFreeDrag(e);
         }
-    }, [isDragging, handleCalendarDrag, handleFreeDrag, onPositionChange, planifyRef]);
+    }, [isDragging, handleCalendarDrag, bounds, handleFreeDrag]);
 
     const onMouseUp = useCallback((e: MouseEvent) => {
         setIsDragging(false);
