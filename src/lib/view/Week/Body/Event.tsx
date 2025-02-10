@@ -15,10 +15,10 @@ type EventProps = {
 }
 
 const Event = ({ event, day }: EventProps) => {
-    const { bounds, colWidth, rowHeight } = usePlanify();
+    const { bounds } = usePlanify();
     const [currentEvent, setCurrentEvent] = useState<PlanifyEvent>(event);
 
-    const { ref, isDragging } = useDraggable({ event, grid: { x: colWidth, y: rowHeight } });
+    const { ref, isDragging } = useDraggable({ event });
 
     const { ref: topResizeRef } = useResize({
         onResize: (date) => {

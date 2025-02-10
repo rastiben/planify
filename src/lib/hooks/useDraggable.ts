@@ -12,15 +12,11 @@ type Position = {
 
 type UseDraggableProps = {
     event: PlanifyEvent;
-    grid: {
-        x: number; // Width of one time slot
-        y: number; // Height of one row
-    };
     onPositionChange?: (newPosition: Position) => void;
 };
 
-const useDraggable = ({ event, grid, onPositionChange }: UseDraggableProps) => {
-    const { date, resources, bounds, colWidth, rowHeight, planifyRef } = usePlanify();
+const useDraggable = ({ event, onPositionChange }: UseDraggableProps) => {
+    const { date, resources, bounds, colWidth, planifyRef } = usePlanify();
     const ref = useRef<HTMLDivElement | null>(null);
     const ghostRef = useRef<HTMLDivElement | null>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -63,19 +59,64 @@ const useDraggable = ({ event, grid, onPositionChange }: UseDraggableProps) => {
         const time = getEventSlotFromOffsets({
             height: bounds?.height,
             bottom: y || 0,
-            top: (y || 0),
+            top: y || 0,
             day,
         });
 
         return floorDateTime(time.start, "quarter");
     }, [bounds, planifyRef, date, colWidth]);
 
+    const handleCalendarDrag = useCallback((e: MouseEvent) => {
+        if (!ghostRef.current) return;
+
+        const deltaY = e.clientY - dragInfo.current.startY;
+        const mouseY = dragInfo.current.initialOffsetY + deltaY;
+
+        const day = getSelectedDate({ x: e.clientX, y: mouseY });
+
+        let newX;
+
+        const dayLeft = (day.weekday - 1) * colWidth;
+
+        if (resources) {
+            const resourceIdx = resources.findIndex((r) => r.id === event.resourceId);
+            newX = dayLeft + (colWidth / resources.length * resourceIdx) + (bounds?.left || 0);
+        } else {
+            newX = dayLeft + (bounds?.left || 0);
+        }
+
+        const offset = getEventOffset({ height: bounds?.height, start: day, end: day });
+
+        const newY = (offset?.start || 0);
+
+        setPosition({ x: newX, y: newY });
+        ghostRef.current.style.left = `${newX}px`;
+        ghostRef.current.style.top = `${newY}px`;
+
+        return { x: newX, y: newY };
+    }, [bounds, colWidth, resources, event, getSelectedDate]);
+
+    const handleFreeDrag = useCallback((e: MouseEvent) => {
+        if (!ghostRef.current) return;
+
+        const deltaX = e.clientX - dragInfo.current.startX;
+        const deltaY = e.clientY - dragInfo.current.startY;
+
+        const newX = dragInfo.current.initialOffsetX + deltaX;
+        const newY = dragInfo.current.initialOffsetY + deltaY;
+
+        setPosition({ x: newX, y: newY });
+        ghostRef.current.style.left = `${newX}px`;
+        ghostRef.current.style.top = `${newY}px`;
+
+        return { x: newX, y: newY };
+    }, []);
+
     const onMouseDown = useCallback((e: MouseEvent) => {
         if (!ref.current) return;
         if (!(e.target as HTMLElement).closest(".planify-week--event--content")) return;
 
         e.preventDefault();
-
         setIsDragging(true);
 
         // Apply opacity to original element
@@ -97,43 +138,24 @@ const useDraggable = ({ event, grid, onPositionChange }: UseDraggableProps) => {
 
     const onMouseMove = useCallback((e: MouseEvent) => {
         if (!isDragging || !ghostRef.current) return;
-
         e.preventDefault();
 
+        // Check if mouse is within calendar bounds
+        const isWithinCalendar = bounds &&
+            e.clientX >= bounds.left &&
+            e.clientX <= bounds.right &&
+            e.clientY >= bounds.top &&
+            e.clientY <= bounds.bottom;
 
-
-        const deltaY = e.clientY - dragInfo.current.startY;
-        const mouseY = dragInfo.current.initialOffsetY + deltaY;
-
-        console.log(e.clientY, mouseY);
-
-        const day = getSelectedDate({ x: e.clientX, y: mouseY });
-
-        let newX;
-
-        const dayLeft = (day.weekday - 1) * colWidth;
-
-        if (resources) {
-            const resourceIdx = resources.findIndex((r) => r.id === event.resourceId);
-            newX = dayLeft + (colWidth / resources.length * resourceIdx) + (bounds?.left || 0);
-        } else {
-            newX = dayLeft + (bounds?.left || 0);
-        }
-
-        const offset = getEventOffset({ height: bounds?.height, start: day, end: day });
-
-        const newY = (offset?.start || 0);
-
-        // Update position state
-        setPosition({ x: newX, y: newY });
+        const newPosition = isWithinCalendar
+            ? handleCalendarDrag(e)
+            : handleFreeDrag(e);
 
         // Call the position change callback
-        onPositionChange?.({ x: newX, y: newY });
-
-        // Update ghost element position
-        ghostRef.current.style.left = `${newX}px`;
-        ghostRef.current.style.top = `${newY}px`;
-    }, [isDragging, date, bounds, planifyRef, colWidth, resources, rowHeight, onPositionChange, event]);
+        if (newPosition) {
+            onPositionChange?.(newPosition);
+        }
+    }, [isDragging, handleCalendarDrag, handleFreeDrag, onPositionChange, planifyRef]);
 
     const onMouseUp = useCallback((e: MouseEvent) => {
         setIsDragging(false);
@@ -161,7 +183,6 @@ const useDraggable = ({ event, grid, onPositionChange }: UseDraggableProps) => {
         return () => {
             element.removeEventListener("mousedown", onMouseDown);
             document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
             document.removeEventListener('mouseup', onMouseUp);
         };
     }, [onMouseDown, onMouseMove, onMouseUp]);
