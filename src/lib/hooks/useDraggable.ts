@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PlanifyEvent } from "../types";
 import { usePlanify } from "../contexts/Planify.context.tsx";
-import { getCurrentLocation, isMouseWithinCalendarBounds } from "../helpers/location.ts";
+import { getCurrentLocation, getSelectedDate, isMouseWithinCalendarBounds } from "../helpers/location.ts";
 import { getEventOffset, getEventSlotFromOffsets } from "../helpers/events.ts";
 import { floorDateTime } from "../helpers/date.ts";
 import useAutoScroll from "./useAutoScroll.ts";
@@ -40,23 +40,6 @@ const useDraggable = ({ event }: UseDraggableProps) => {
         initialOffsetY: 0,
     });
 
-    const getSelectedDate = useCallback(({ x, y }: Position) => {
-        const { day } = getCurrentLocation({
-            date,
-            boundLeft: x - (bounds?.left || 0) + (planifyRef.current?.scrollLeft || 0),
-            dayWidth: colWidth
-        });
-
-        const time = getEventSlotFromOffsets({
-            height: bounds?.height,
-            bottom: y || 0,
-            top: y || 0,
-            day,
-        });
-
-        return floorDateTime(time.start, "quarter");
-    }, [bounds, planifyRef, date, colWidth]);
-
     const updateGhostElement = useCallback(({ date, top }: { date: DateTime; top: number }) => {
         if (ghostRef.current) {
             ghostRef.current.remove();
@@ -72,16 +55,17 @@ const useDraggable = ({ event }: UseDraggableProps) => {
 
     const handleCalendarDrag = useCallback((e: MouseEvent) => {
         if (!ghostRef.current) return;
+        if (!bounds) return;
 
         const deltaY = e.clientY - dragInfo.current.startY;
         const mouseY = dragInfo.current.initialOffsetY + deltaY + (planifyRef.current?.scrollTop || 0) - (bounds?.top || 0);
 
-        const day = getSelectedDate({ x: e.clientX, y: mouseY });
+        const day = getSelectedDate({ x: e.clientX, y: mouseY, planifyRef, bounds, colWidth, date });
         const offset = getEventOffset({ height: bounds?.height, start: day, end: day });
         const newY = (offset?.start || 0);
 
         updateGhostElement({ date: day, top: newY });
-    }, [planifyRef, getSelectedDate, bounds, updateGhostElement]);
+    }, [bounds, planifyRef, colWidth, date, updateGhostElement]);
 
     const handleFreeDrag = useCallback((e: MouseEvent) => {
         if (!ghostRef.current) return;

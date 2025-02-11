@@ -1,9 +1,8 @@
 import { usePlanify } from "../contexts/Planify.context.tsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DateTime } from "luxon";
-import { getEventSlotFromOffsets } from "../helpers/events.ts";
 import { floorDateTime } from "../helpers/date.ts";
-import { getCurrentLocation } from "../helpers/location.ts";
+import { getSelectedDate } from "../helpers/location.ts";
 
 type useResizeProps = {
     onResize: (date: DateTime) => void;
@@ -14,35 +13,19 @@ const useResize = ({ onResize }: useResizeProps) => {
     const [isResizing, setIsResizing] = useState(false);
     const ref = useRef<HTMLDivElement | null>(null);
 
-    const getSelectedDate = useCallback(({ x, y }: { x: number; y: number }) => {
-        const offset = y - (bounds?.top || 0) + (planifyRef.current?.scrollTop || 0);
-        const { day } = getCurrentLocation({
-            date,
-            boundLeft: x - (bounds?.left || 0) + (planifyRef.current?.scrollLeft || 0),
-            dayWidth: colWidth
-        });
-
-        const time = getEventSlotFromOffsets({
-            height: bounds?.height,
-            bottom: offset || 0,
-            top: (offset || 0),
-            day,
-        });
-
-        return floorDateTime(time.start, "quarter");
-    }, [bounds, planifyRef, date, colWidth]);
-
     const onMouseDown = useCallback(() => {
         setIsResizing(true);
     }, []);
 
     const onMouseMove = useCallback((e: MouseEvent) => {
         if (!isResizing) return;
+        if (!bounds) return;
 
-        const date = getSelectedDate({ x: e.x, y: e.y });
+        const offset = e.y - (bounds?.top || 0) + (planifyRef.current?.scrollTop || 0);
+        const date = getSelectedDate({ x: e.x, y: offset, date, colWidth, bounds, planifyRef });
 
         onResize(floorDateTime(date, "quarter"));
-    }, [isResizing, getSelectedDate, onResize]);
+    }, [isResizing, date, onResize]);
 
     const onMouseUp = useCallback(() => {
         setIsResizing(false);

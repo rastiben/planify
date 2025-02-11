@@ -1,6 +1,8 @@
 import { DateTime } from "luxon";
 import { PlanifyResource } from "../types.ts";
-import { MutableRefObject } from "react";
+import { MutableRefObject, useCallback } from "react";
+import { getEventSlotFromOffsets } from "./events.ts";
+import { floorDateTime } from "./date.ts";
 
 type GetCurrentLocationProps = {
     date: DateTime;
@@ -42,4 +44,35 @@ export const isMouseWithinCalendarBounds = (
         mouseY >= bounds.top - (planifyRef.current?.scrollTop || 0) &&
         mouseY <= bounds.bottom + (planifyRef.current?.scrollTop || 0)
     );
+};
+
+export const getSelectedDate = ({
+    x,
+    y,
+    date,
+    bounds,
+    planifyRef,
+    colWidth
+} : {
+    x:number;
+    y: number;
+    date: DateTime;
+    bounds: DOMRect;
+    colWidth: number;
+    planifyRef: MutableRefObject<HTMLDivElement | null>
+}) => {
+    const { day } = getCurrentLocation({
+        date,
+        boundLeft: x - (bounds?.left || 0) + (planifyRef.current?.scrollLeft || 0),
+        dayWidth: colWidth
+    });
+
+    const time = getEventSlotFromOffsets({
+        height: bounds?.height,
+        bottom: y || 0,
+        top: y || 0,
+        day,
+    });
+
+    return floorDateTime(time.start, "quarter");
 };
