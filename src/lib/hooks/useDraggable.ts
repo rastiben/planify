@@ -14,11 +14,10 @@ type Position = {
 
 type UseDraggableProps = {
     event: PlanifyEvent;
-    onPositionChange?: (newPosition: Position) => void;
 };
 
-const useDraggable = ({ event, onPositionChange }: UseDraggableProps) => {
-    const { date, resources, bounds, colWidth, planifyRef } = usePlanify();
+const useDraggable = ({ event }: UseDraggableProps) => {
+    const { date, bounds, colWidth, planifyRef } = usePlanify();
     const ref = useRef<HTMLDivElement | null>(null);
     const ghostRef = useRef<HTMLDivElement | null>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -79,27 +78,16 @@ const useDraggable = ({ event, onPositionChange }: UseDraggableProps) => {
         if (!ghostRef.current) return;
 
         const deltaY = e.clientY - dragInfo.current.startY;
-        const mouseY = dragInfo.current.initialOffsetY + deltaY + (planifyRef.current?.scrollTop || 0);
+        const mouseY = dragInfo.current.initialOffsetY + deltaY + (planifyRef.current?.scrollTop || 0) - (bounds?.top || 0);
 
         const day = getSelectedDate({ x: e.clientX, y: mouseY });
 
-        // let newX;
-        //
-        // const dayLeft = (day.weekday - 1) * colWidth;
-        //
-        // if (resources) {
-        //     const resourceIdx = resources.findIndex((r) => r.id === event.resourceId);
-        //     newX = dayLeft + (colWidth / resources.length * resourceIdx) + (bounds?.left || 0) - (planifyRef.current?.scrollLeft || 0);
-        // } else {
-        //     newX = dayLeft + (bounds?.left || 0) - (planifyRef.current?.scrollLeft || 0);
-        // }
-
         const offset = getEventOffset({ height: bounds?.height, start: day, end: day });
 
-        const newY = (offset?.start || 0) - (bounds?.top || 0) - (planifyRef.current?.scrollTop || 0);
+        const newY = (offset?.start || 0);
 
         updateGhostElement({ date: day, top: newY });
-    }, [planifyRef, getSelectedDate, bounds?.height, updateGhostElement]);
+    }, [planifyRef, getSelectedDate, bounds, updateGhostElement]);
 
     const handleFreeDrag = useCallback((e: MouseEvent) => {
         if (!ghostRef.current) return;
@@ -138,8 +126,11 @@ const useDraggable = ({ event, onPositionChange }: UseDraggableProps) => {
         };
 
         // Create and position the ghost element
-        updateGhostElement({ top: rect.top - (bounds?.top || 0), date: event.start });
-    }, [event, updateGhostElement]);
+        updateGhostElement({
+            top: rect.top - (bounds?.top || 0) + (planifyRef.current?.scrollTop || 0),
+            date: event.start
+        });
+    }, [event, planifyRef, bounds, updateGhostElement]);
 
     const onMouseMove = useCallback((e: MouseEvent) => {
         if (!isDragging || !ghostRef.current) return;
@@ -159,7 +150,7 @@ const useDraggable = ({ event, onPositionChange }: UseDraggableProps) => {
         }
     }, [isDragging, handleCalendarDrag, bounds, handleFreeDrag]);
 
-    const onMouseUp = useCallback((e: MouseEvent) => {
+    const onMouseUp = useCallback(() => {
         setIsDragging(false);
 
         // Reset opacity on original element
