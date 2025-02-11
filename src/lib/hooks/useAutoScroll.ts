@@ -13,9 +13,9 @@ const useAutoScroll = ({
         if (!isDragging) return;
         if (!planifyRef?.current) return;
 
-        let scrollInterval;
+        let scrollInterval: number | null;
 
-        const handleMouseMove = (e) => {
+        const handleMouseMove = (e: MouseEvent) => {
             const container = planifyRef.current;
             if (!container) return;
 

@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import { PlanifyResource } from "../types.ts";
+import { MutableRefObject } from "react";
 
 type GetCurrentLocationProps = {
     date: DateTime;
@@ -25,4 +26,20 @@ export const getCurrentLocation = ({ date, boundLeft, dayWidth, resources }: Get
         day,
         resource: resources?.[resourceIndex] || null,
     }
+};
+
+// Helper function to check if mouse is within calendar bounds
+export const isMouseWithinCalendarBounds = (
+    bounds: DOMRect,
+    planifyRef: MutableRefObject<HTMLDivElement | null>,
+    mouseX: number,
+    mouseY: number
+): boolean => {
+    return (
+        bounds &&
+        mouseX >= bounds.left - (planifyRef.current?.scrollLeft || 0) &&
+        mouseX <= bounds.right + (planifyRef.current?.scrollLeft || 0) &&
+        mouseY >= bounds.top - (planifyRef.current?.scrollTop || 0) &&
+        mouseY <= bounds.bottom + (planifyRef.current?.scrollTop || 0)
+    );
 };

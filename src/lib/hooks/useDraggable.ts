@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PlanifyEvent } from "../types";
 import { usePlanify } from "../contexts/Planify.context.tsx";
-import { getCurrentLocation } from "../helpers/location.ts";
+import { getCurrentLocation, isMouseWithinCalendarBounds } from "../helpers/location.ts";
 import { getEventOffset, getEventSlotFromOffsets } from "../helpers/events.ts";
 import { floorDateTime } from "../helpers/date.ts";
 import useAutoScroll from "./useAutoScroll.ts";
 import { DateTime } from "luxon";
+import { createGhostElement } from "../helpers/draggable.ts";
 
 type Position = {
     x: number;
@@ -14,6 +15,13 @@ type Position = {
 
 type UseDraggableProps = {
     event: PlanifyEvent;
+};
+
+type DragInfo = {
+    startX: number;
+    startY: number;
+    initialOffsetX: number;
+    initialOffsetY: number;
 };
 
 const useDraggable = ({ event }: UseDraggableProps) => {
@@ -25,39 +33,14 @@ const useDraggable = ({ event }: UseDraggableProps) => {
     const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
 
     // Store the initial mouse position and element offset when dragging starts
-    const dragInfo = useRef({
+    const dragInfo = useRef<DragInfo>({
         startX: 0,
         startY: 0,
         initialOffsetX: 0,
         initialOffsetY: 0,
     });
 
-    const updateGhostElement = useCallback(({ date, top }: { date: DateTime; top: number }) => {
-        if (ghostRef.current) {
-            ghostRef.current.remove();
-            ghostRef.current = null;
-        }
-
-        const rect = ref.current?.getBoundingClientRect();
-        const ghost = ref.current?.cloneNode(true) as HTMLDivElement;
-        ghost.style.position = 'absolute';
-        ghost.style.pointerEvents = 'none';
-        ghost.style.width = `100%`;
-        ghost.style.height = `${rect.height}px`;
-        ghost.style.top = `${top}px`;
-        ghost.style.transform = 'none';
-        ghost.style.margin = '0';
-        ghost.style.zIndex = '1000';
-        ghost.id = 'ghost-element';
-
-        const day = document.querySelector(`[data-date='${date.toISODate()}'][data-resource='${event.resourceId}']`);
-
-        day.appendChild(ghost);
-        ghostRef.current = ghost;
-        return ghost;
-    }, [event.resourceId]);
-
-    const getSelectedDate = useCallback(({ x, y }: { x: number; y: number }) => {
+    const getSelectedDate = useCallback(({ x, y }: Position) => {
         const { day } = getCurrentLocation({
             date,
             boundLeft: x - (bounds?.left || 0) + (planifyRef.current?.scrollLeft || 0),
@@ -74,6 +57,19 @@ const useDraggable = ({ event }: UseDraggableProps) => {
         return floorDateTime(time.start, "quarter");
     }, [bounds, planifyRef, date, colWidth]);
 
+    const updateGhostElement = useCallback(({ date, top }: { date: DateTime; top: number }) => {
+        if (ghostRef.current) {
+            ghostRef.current.remove();
+            ghostRef.current = null;
+        }
+
+        if (!ref.current) return;
+
+        const ghost = createGhostElement(ref.current, top, date, event.resourceId);
+        ghostRef.current = ghost;
+        return ghost;
+    }, [event.resourceId]);
+
     const handleCalendarDrag = useCallback((e: MouseEvent) => {
         if (!ghostRef.current) return;
 
@@ -81,9 +77,7 @@ const useDraggable = ({ event }: UseDraggableProps) => {
         const mouseY = dragInfo.current.initialOffsetY + deltaY + (planifyRef.current?.scrollTop || 0) - (bounds?.top || 0);
 
         const day = getSelectedDate({ x: e.clientX, y: mouseY });
-
         const offset = getEventOffset({ height: bounds?.height, start: day, end: day });
-
         const newY = (offset?.start || 0);
 
         updateGhostElement({ date: day, top: newY });
@@ -112,9 +106,6 @@ const useDraggable = ({ event }: UseDraggableProps) => {
         e.preventDefault();
         setIsDragging(true);
 
-        // Apply opacity to original element
-        ref.current.style.opacity = '0.5';
-
         const rect = ref.current.getBoundingClientRect();
 
         // Store initial positions
@@ -134,17 +125,12 @@ const useDraggable = ({ event }: UseDraggableProps) => {
 
     const onMouseMove = useCallback((e: MouseEvent) => {
         if (!isDragging || !ghostRef.current) return;
+        if (!bounds) return;
+
         e.preventDefault();
 
-        // Check if mouse is within calendar bounds
-        const isWithinCalendar = bounds &&
-            e.clientX >= bounds.left &&
-            e.clientX <= bounds.right &&
-            e.clientY >= bounds.top &&
-            e.clientY <= bounds.bottom;
-
-        if (isWithinCalendar) {
-            handleCalendarDrag(e)
+        if (isMouseWithinCalendarBounds(bounds, planifyRef, e.clientX, e.clientY)) {
+            handleCalendarDrag(e);
         } else {
             handleFreeDrag(e);
         }
@@ -152,11 +138,6 @@ const useDraggable = ({ event }: UseDraggableProps) => {
 
     const onMouseUp = useCallback(() => {
         setIsDragging(false);
-
-        // Reset opacity on original element
-        if (ref.current) {
-            ref.current.style.opacity = '1';
-        }
 
         // Remove the ghost element
         if (ghostRef.current) {
