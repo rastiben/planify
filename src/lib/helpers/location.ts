@@ -31,18 +31,32 @@ export const getCurrentLocation = ({ date, boundLeft, dayWidth, resources }: Get
 };
 
 // Helper function to check if mouse is within calendar bounds
-export const isMouseWithinCalendarBounds = (
-    bounds: DOMRect,
-    planifyRef: MutableRefObject<HTMLDivElement | null>,
-    mouseX: number,
-    mouseY: number
-): boolean => {
+type IsMouseWithinCalendarBoundsParams = {
+    bounds: DOMRect;
+    mouseX: number;
+    mouseY: number;
+    eventHeight: number;
+    planifyRef: React.RefObject<HTMLDivElement>;
+};
+
+// Helper function to check if mouse is within calendar bounds considering event height
+export const isMouseWithinCalendarBounds = ({
+     bounds,
+     mouseX,
+     mouseY,
+     eventHeight,
+     planifyRef
+ }: IsMouseWithinCalendarBoundsParams): boolean => {
+    if (!bounds) return false;
+
+    const scrollLeft = planifyRef.current?.scrollLeft || 0;
+    const scrollTop = planifyRef.current?.scrollTop || 0;
+
     return (
-        bounds &&
-        mouseX >= bounds.left - (planifyRef.current?.scrollLeft || 0) &&
-        mouseX <= bounds.right + (planifyRef.current?.scrollLeft || 0) &&
-        mouseY >= bounds.top - (planifyRef.current?.scrollTop || 0) &&
-        mouseY <= bounds.bottom + (planifyRef.current?.scrollTop || 0)
+        mouseX >= bounds.left - scrollLeft &&
+        mouseX <= bounds.right + scrollLeft &&
+        mouseY >= bounds.top - scrollTop &&
+        mouseY + eventHeight <= bounds.bottom - scrollTop
     );
 };
 

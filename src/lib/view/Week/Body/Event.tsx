@@ -17,8 +17,9 @@ type EventProps = {
 const Event = ({ event, day }: EventProps) => {
     const { bounds } = usePlanify();
     const [currentEvent, setCurrentEvent] = useState<PlanifyEvent>(event);
+    const isSameDay = event.start.hasSame(event.end, "day");
 
-    const { ref, isDragging } = useDraggable({ event });
+    const { ref, isDragging } = useDraggable({ event, isDraggable: isSameDay });
 
     const { ref: topResizeRef } = useResize({
         onResize: (date) => {
