@@ -22,10 +22,10 @@ const useResize = ({ onResize }: useResizeProps) => {
         if (!bounds) return;
 
         const offset = e.y - (bounds?.top || 0) + (planifyRef.current?.scrollTop || 0);
-        const date = getSelectedDate({ x: e.x, y: offset, date, colWidth, bounds, planifyRef });
+        const day = getSelectedDate({ x: e.x, y: offset, date, colWidth, bounds, planifyRef });
 
-        onResize(floorDateTime(date, "quarter"));
-    }, [isResizing, date, onResize]);
+        onResize(floorDateTime(day, "quarter"));
+    }, [isResizing, bounds, planifyRef, date, colWidth, onResize]);
 
     const onMouseUp = useCallback(() => {
         setIsResizing(false);
